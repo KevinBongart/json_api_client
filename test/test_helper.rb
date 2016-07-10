@@ -33,3 +33,7 @@ end
 class UserPreference < TestResource
   self.primary_key = :user_id
 end
+
+class DasherizedKeysTestResource < TestResource
+  self.key_format = :dashes
+end

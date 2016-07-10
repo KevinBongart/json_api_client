@@ -16,31 +16,35 @@ module JsonApiClient
     attr_accessor :last_result_set,
                   :links,
                   :relationships
-    class_attribute :site,
-                    :primary_key,
-                    :parser,
-                    :paginator,
+
+    class_attribute :associations,
                     :connection_class,
                     :connection_object,
                     :connection_options,
-                    :query_builder,
+                    :key_format,
                     :linker,
-                    :relationship_linker,
+                    :paginator,
+                    :parser,
+                    :primary_key,
+                    :query_builder,
                     :read_only_attributes,
+                    :relationship_linker,
                     :requestor_class,
-                    :associations,
+                    :site,
                     instance_accessor: false
-    self.primary_key          = :id
-    self.parser               = Parsers::Parser
-    self.paginator            = Paginating::Paginator
+
+    self.associations         = []
     self.connection_class     = Connection
     self.connection_options   = {}
-    self.query_builder        = Query::Builder
+    self.key_format           = :underscore
     self.linker               = Linking::Links
-    self.relationship_linker  = Relationships::Relations
+    self.paginator            = Paginating::Paginator
+    self.parser               = Parsers::Parser
+    self.primary_key          = :id
+    self.query_builder        = Query::Builder
     self.read_only_attributes = [:id, :type, :links, :meta, :relationships]
+    self.relationship_linker  = Relationships::Relations
     self.requestor_class      = Query::Requestor
-    self.associations         = []
 
     include Associations::BelongsTo
     include Associations::HasMany
@@ -61,7 +65,9 @@ module JsonApiClient
       #
       # @return [String]
       def resource_name
-        name.demodulize.underscore
+        resource_name = name.demodulize.underscore
+        resource_name = resource_name.dasherize if key_format == :dashes
+        resource_name
       end
 
       # Specifies the JSON API resource type. By default this is inferred

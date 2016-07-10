@@ -3,35 +3,47 @@ require 'test_helper'
 class ResourceTest < MiniTest::Test
 
   def test_basic
-    assert_equal :id, Article.primary_key
-    assert_equal "articles", Article.table_name
-    assert_equal "article", Article.resource_name
+    assert_equal :user_id, UserPreference.primary_key
+    assert_equal "user_preferences", UserPreference.table_name
+    assert_equal "user_preference", UserPreference.resource_name
   end
 
   def test_each_on_scope
-    stub_request(:get, "http://example.com/articles")
-      .with(query: {filter: {author: '5'}})
+    stub_request(:get, "http://example.com/user_preferences")
+      .with(query: {filter: {user: '5'}})
       .to_return(headers: {content_type: "application/vnd.api+json"}, body: {
         data: [{
-          type: "articles",
+          type: "user_preferences",
           id: "1",
           attributes: {
-            title: "Rails is Omakase"
+            receive_email: true
           }
         }]
       }.to_json)
 
-    articles = []
-    Article.where(author: '5').each do |article|
-      articles.push(article)
+    user_preferences = []
+    UserPreference.where(user: '5').each do |user_preference|
+      user_preferences.push(user_preference)
     end
-    assert_equal 1, articles.length
+    assert_equal 1, user_preferences.length
   end
 
   def test_should_always_have_type_attribute
     article = Article.new
     assert_equal "articles", article.type
     assert_equal({type: "articles"}.with_indifferent_access, article.attributes)
+  end
+
+  def test_support_for_underscorized_type_attribute
+    user_preference = UserPreference.new
+    assert_equal "user_preferences", user_preference.type
+    assert_equal({type: "user_preferences"}.with_indifferent_access, user_preference.attributes)
+  end
+
+  def test_support_for_dasherized_type_attribute
+    test_resource = DasherizedKeysTestResource.new
+    assert_equal "dasherized-keys-test-resources", test_resource.type
+    assert_equal({type: "dasherized-keys-test-resources"}.with_indifferent_access, test_resource.attributes)
   end
 
   def test_can_set_arbitrary_attributes
